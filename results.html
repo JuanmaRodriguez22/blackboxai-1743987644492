@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Election Results</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <div class="max-w-4xl mx-auto bg-white rounded-lg shadow-md overflow-hidden">
+            <div class="bg-blue-600 py-4 px-6">
+                <h1 class="text-2xl font-bold text-white">Election Results</h1>
+                <p class="text-blue-100" id="methodTitle"></p>
+            </div>
+
+            <div class="p-6">
+                <div class="mb-8">
+                    <h2 class="text-xl font-semibold mb-4">Input Summary</h2>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <p class="text-gray-500">Total Seats</p>
+                            <p class="text-2xl font-bold" id="totalSeatsDisplay"></p>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <p class="text-gray-500">Total Votes</p>
+                            <p class="text-2xl font-bold" id="totalVotesDisplay"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-8">
+                    <h2 class="text-xl font-semibold mb-4">Seat Allocation</h2>
+                    <div class="overflow-x-auto">
+                        <table class="w-full border-collapse" id="resultsTable">
+                            <thead>
+                                <tr class="bg-gray-100">
+                                    <th class="py-2 px-4 text-left">Party</th>
+                                    <th class="py-2 px-4 text-right">Votes</th>
+                                    <th class="py-2 px-4 text-right">Seats</th>
+                                    <th class="py-2 px-4 text-right">% Votes</th>
+                                    <th class="py-2 px-4 text-right">% Seats</th>
+                                </tr>
+                            </thead>
+                            <tbody id="resultsBody">
+                                <!-- Results will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="flex justify-between">
+                    <button onclick="window.location.href = 'index.html'" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition">
+                        <i class="fas fa-arrow-left mr-2"></i>Back to Calculator
+                    </button>
+                    <button onclick="window.location.href = 'index.html'" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">
+                        <i class="fas fa-calculator mr-2"></i>New Calculation
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const data = JSON.parse(localStorage.getItem('electionResults'));
+            if (!data) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            // Set method title
+            const methodTitle = document.getElementById('methodTitle');
+            methodTitle.textContent = data.method === 'dHondt' 
+                ? 'D\'Hondt Method Calculation Results' 
+                : 'Hare-Niemeyer Method Calculation Results';
+
+            // Set summary data
+            document.getElementById('totalSeatsDisplay').textContent = data.totalSeats;
+            const totalVotes = data.parties.reduce((sum, party) => sum + party.votes, 0);
+            document.getElementById('totalVotesDisplay').textContent = totalVotes.toLocaleString();
+
+            // Populate results table
+            const tbody = document.getElementById('resultsBody');
+            data.results.forEach(party => {
+                const votePercentage = (party.votes / totalVotes * 100).toFixed(2);
+                const seatPercentage = (party.seats / data.totalSeats * 100).toFixed(2);
+
+                const row = document.createElement('tr');
+                row.className = 'border-b';
+                row.innerHTML = `
+                    <td class="py-2 px-4">${party.name}</td>
+                    <td class="py-2 px-4 text-right">${party.votes.toLocaleString()}</td>
+                    <td class="py-2 px-4 text-right font-bold">${party.seats}</td>
+                    <td class="py-2 px-4 text-right">${votePercentage}%</td>
+                    <td class="py-2 px-4 text-right">${seatPercentage}%</td>
+                `;
+                tbody.appendChild(row);
+            });
+        });
+    </script>
+</body>
+</html>
